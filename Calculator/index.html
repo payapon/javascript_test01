@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>シンプル電卓</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .calculator {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            width: 260px;
+        }
+        /* ディスプレイ部分 */
+        #display {
+            width: 100%;
+            height: 50px;
+            background-color: #fff;
+            margin-bottom: 15px;
+            font-size: 28px;
+            text-align: right;
+            padding: 5px 10px;
+            box-sizing: border-box;
+            border: none;
+            border-radius: 6px;
+            color: #222;
+        }
+        /* ボタンの配置（グリッドレイアウト） */
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        button {
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        button:active {
+            filter: brightness(0.8);
+        }
+        /* 演算子ボタンの色 */
+        .operator {
+            background-color: #ff9f0a;
+            color: white;
+        }
+        /* クリアボタンの色 */
+        .clear {
+            background-color: #a5a5a5;
+            color: black;
+        }
+        /* イコールボタンの色 */
+        .equal {
+            background-color: #ff9f0a;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator">
+        <input type="text" id="display" value="0" disabled>
+        
+        <div class="buttons">
+            <button class="clear" onclick="clearDisplay()">C</button>
+            <button class="operator" onclick="appendOperator('/')">÷</button>
+            <button class="operator" onclick="appendOperator('*')">×</button>
+            <button class="operator" onclick="appendOperator('-')">-</button>
+            
+            <button onclick="appendNumber('7')">7</button>
+            <button onclick="appendNumber('8')">8</button>
+            <button onclick="appendNumber('9')">9</button>
+            <button class="operator" onclick="appendOperator('+')">+</button>
+            
+            <button onclick="appendNumber('4')">4</button>
+            <button onclick="appendNumber('5')">5</button>
+            <button onclick="appendNumber('6')">6</button>
+            <button class="equal" style="grid-row: span 2; height: 100%;" onclick="calculate()">=</button>
+            
+            <button onclick="appendNumber('1')">1</button>
+            <button onclick="appendNumber('2')">2</button>
+            <button onclick="appendNumber('3')">3</button>
+            
+            <button onclick="appendNumber('0')" style="grid-column: span 2;">0</button>
+            <button onclick="appendNumber('.')">.</button>
+        </div>
+    </div>
+
+    <script>
+        // --- JavaScriptの処理 ---
+        const display = document.getElementById('display');
+        
+        let currentInput = '0';  // 現在入力中の数字
+        let previousInput = ''; // 1つ前に入力されていた数字
+        let operator = '';      // 選択された演算子 (+, -, *, /)
+        let isResetDisplay = false; // 次に数字が押されたときに画面をリセットするかどうか
+
+        // 数字・小数が押されたときの処理
+        function appendNumber(number) {
+            // 小数点がすでに含まれているのに、また小数が押された場合は無視する
+            if (number === '.' && currentInput.includes('.')) return;
+
+            // 初期状態の「0」のときや、演算子が押された直後は表示を上書きする
+            if (currentInput === '0' || isResetDisplay) {
+                currentInput = number;
+                isResetDisplay = false;
+            } else {
+                currentInput += number; // 文字列として数字を後ろに連結する
+            }
+            
+            updateDisplay();
+        }
+
+        // 演算子（+, -, *, /）が押されたときの処理
+        function appendOperator(op) {
+            // すでに演算子が選ばれていて、新しい数字も入力されている場合は、先にその計算を行う
+            if (operator !== '' && !isResetDisplay) {
+                calculate();
+            }
+            
+            previousInput = currentInput; // 現在の数字を「1つ前の数字」に退避
+            operator = op;                // 押された演算子を記憶
+            isResetDisplay = true;        // 次の数字入力で画面をクリアする準備
+        }
+
+        // ＝ が押されたときの計算処理
+        function calculate() {
+            // 演算子か、前の数字がなければ計算しない
+            if (operator === '' || previousInput === '') return;
+
+            const prev = parseFloat(previousInput); // 文字列を小数（数値）に変換
+            const current = parseFloat(currentInput);
+            let result = 0;
+
+            // 演算子に応じて計算を切り替える（条件分岐）
+            switch (operator) {
+                case '+':
+                    result = prev + current;
+                    break;
+                case '-':
+                    result = prev - current;
+                    break;
+                case '*':
+                    result = prev * current;
+                    break;
+                case '/':
+                    // 0で割ろうとしたときの対策（例外処理）
+                    if (current === 0) {
+                        alert('0で割ることはできません！');
+                        clearDisplay();
+                        return;
+                    }
+                    result = prev / current;
+                    break;
+                default:
+                    return;
+            }
+
+            // 計算結果を現在の入力にする（結果を丸めることでJavaScript特有の小数誤差を簡易対策）
+            currentInput = String(Math.round(result * 100000000) / 100000000);
+            operator = '';
+            previousInput = '';
+            isResetDisplay = true; // 次に数字が押されたら新しく入力を始める
+            updateDisplay();
+        }
+
+        // C（クリア）ボタンが押されたときの処理
+        function clearDisplay() {
+            currentInput = '0';
+            previousInput = '';
+            operator = '';
+            isResetDisplay = false;
+            updateDisplay();
+        }
+
+        // ディスプレイの表示を最新の状態に更新する関数
+        function updateDisplay() {
+            display.value = currentInput;
+        }
+    </script>
+</body>
+</html>
