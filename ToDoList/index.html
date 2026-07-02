@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>シンプルToDoリスト</title>
+    <style>
+        /* 簡単な見た目の調整（CSS） */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .todo-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 300px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #333;
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 8px 12px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="todo-container">
+        <h1>ToDoリスト</h1>
+        <div class="input-area">
+            <input type="text" id="todo-input" placeholder="新しいタスクを入力...">
+            <button id="add-button">追加</button>
+        </div>
+        <ul id="todo-list"></ul>
+    </div>
+
+    <script>
+        // --- JavaScriptの処理 ---
+
+        // 1. HTMLの要素を取得する
+        const todoInput = document.getElementById('todo-input');
+        const addButton = document.getElementById('add-button');
+        const todoList = document.getElementById('todo-list');
+
+        // 2. 「追加」ボタンがクリックされたときの処理
+        addButton.addEventListener('click', function() {
+            const taskText = todoInput.value.trim(); // 入力された文字を取得（前後の空白を削除）
+
+            // もし入力欄が空っぽなら、何もせず処理を終了する
+            if (taskText === '') {
+                alert('タスクを入力してください！');
+                return;
+            }
+
+            // 新しい <li> 要素（リストのアイテム）を作成する
+            const li = document.createElement('li');
+            li.textContent = taskText; // <li> の中にタスクの文字を入れる
+
+            // 削除ボタンを作成する
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = '削除';
+            deleteBtn.classList.add('delete-btn'); // CSSを適用するためのクラスを追加
+
+            // 削除ボタンがクリックされたときの処理
+            deleteBtn.addEventListener('click', function() {
+                // この削除ボタンが含まれている <li> 要素をリストから削除する
+                todoList.removeChild(li);
+            });
+
+            // <li> の中に削除ボタンを入れ込む
+            li.appendChild(deleteBtn);
+
+            // <ul>（リスト全体）の中に、作成した <li> を追加する
+            todoList.appendChild(li);
+
+            // 次の入力のために、入力欄を空にする
+            todoInput.value = '';
+        });
+    </script>
+</body>
+</html>
