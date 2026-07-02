@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>時計 ＆ タイマー</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #eef2f3;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            width: 320px;
+            text-align: center;
+        }
+        h2 {
+            margin: 0 0 15px 0;
+            color: #555;
+            font-size: 18px;
+        }
+        .display {
+            font-size: 42px;
+            font-weight: bold;
+            color: #222;
+            font-family: 'Courier New', Courier, monospace;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        input[type="number"] {
+            width: 70px;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
+        button {
+            padding: 8px 16px;
+            font-size: 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>現在の時刻</h2>
+        <div id="clock-display" class="display">00:00:00</div>
+    </div>
+
+    <div class="card">
+        <h2>カウントダウンタイマー</h2>
+        <div id="timer-display" class="display">00</div>
+        <div class="timer-controls">
+            <input type="number" id="timer-input" value="10" min="1" max="999">
+            <button id="start-button">スタート</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // ① デジタル時計の処理
+        // ==========================================
+        const clockDisplay = document.getElementById('clock-display');
+
+        function updateClock() {
+            const now = new Date(); // 現在の「日時」の情報を持ったオブジェクトを作る
+            
+            // 時・分・秒を取り出す
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            let seconds = now.getSeconds();
+
+            // 1桁（0〜9）のときは、頭に「0」をつけて2桁にする処理（例: 5秒 -> 05秒）
+            hours = String(hours).padStart(2, '0');
+            minutes = String(minutes).padStart(2, '0');
+            seconds = String(seconds).padStart(2, '0');
+
+            // 画面の表示を書き換える
+            clockDisplay.textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        // 1000ミリ秒（1秒）ごとに updateClock 関数を実行する
+        setInterval(updateClock, 1000);
+        updateClock(); // 最初の一歩目が1秒遅れないように、起動時に1回実行しておく
+
+
+        // ==========================================
+        // ② タイマーの処理
+        // ==========================================
+        const timerDisplay = document.getElementById('timer-display');
+        const timerInput = document.getElementById('timer-input');
+        const startButton = document.getElementById('start-button');
+
+        let countdownIntervalId = null; // タイマーの動きを管理するIDを入れる変数
+        let remainingTime = 0;          // 残り秒数
+
+        startButton.addEventListener('click', function() {
+            // 入力された秒数を取得
+            remainingTime = parseInt(timerInput.value, 10);
+
+            if (isNaN(remainingTime) || remainingTime <= 0) {
+                alert('1以上の有効な秒数を入力してください。');
+                return;
+            }
+
+            // 初期表示
+            timerDisplay.textContent = remainingTime;
+            
+            // ボタンや入力を一時的に無効化（連打防止）
+            startButton.disabled = true;
+            timerInput.disabled = true;
+
+            // 1秒ごとに実行するカウントダウン処理
+            countdownIntervalId = setInterval(function() {
+                remainingTime--; // 秒数を1減らす
+                timerDisplay.textContent = remainingTime; // 画面を更新
+
+                // 0秒になったらタイマーを止める
+                if (remainingTime <= 0) {
+                    clearInterval(countdownIntervalId); // 繰り返し処理をストップ
+                    alert('時間になりました！');
+                    
+                    // ボタンや入力を元に戻す
+                    startButton.disabled = false;
+                    timerInput.disabled = false;
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
